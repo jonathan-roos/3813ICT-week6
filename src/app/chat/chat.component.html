@@ -9,7 +9,7 @@
         <div class="col-md-6">
             <form class="form d-flex">
                 <div class="form-group flex-grow-1 me-2">
-                    <input type="text" [(ngModel)]="message" class="form-control" name="message" id="message">
+                    <input type="text" [ngModel]="message()" (ngModelChange)="message.set($event)"name="messageout" id="messageout" class="form-control"/>
                 </div>
                 <div class="form-group">
                     <button type="submit" class="btn btn-primary" (click)="sendMessage()">Send</button>
@@ -23,7 +23,7 @@
         </div>
         <div>
             <ul>
-                <li *ngfor="let message of messages">{{message}}</li>
+                <li *ngFor="let message of messages()">{{message.msg}}</li>
             </ul>
         </div>
     </div>

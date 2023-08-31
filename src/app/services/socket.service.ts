@@ -1,6 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import io from 'socket.io-client';
 import { Observable } from 'rxjs';
+import { Message } from '../message'
 
 const SERVER_URL = 'http://localhost:3000'
 
@@ -9,6 +10,7 @@ const SERVER_URL = 'http://localhost:3000'
 })
 export class SocketService {
   private socket: any;
+  messages = signal<Message[]>([])
 
   initSocket(){
     this.socket = io(SERVER_URL);
@@ -19,10 +21,21 @@ export class SocketService {
     this.socket.emit('message', message)
   }
 
-  getMessage(next: any){
-    this.socket.on('message', (message: any) => next (message));
-    }
+  getMessage(){
+    return this.obsFromIO(this.socket,'message');
   }
+
+  private obsFromIO(io:any,eventname:any){
+    return new Observable(observer=>{
+      io.on(eventname,(data:string)=>{
+        let msgdata:Message = new Message(data,new Date,1);
+        this.messages.mutate(messages =>{messages.push(msgdata)});
+        observer.next(this.messages())
+      });
+    });
+  }
+
+}
 
   
 

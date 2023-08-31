@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { SocketService } from '../services/socket.service'
+import { Message } from '../message'
 
 const SERVER_URL = 'http://localhost:3000'
 
@@ -12,16 +13,27 @@ const SERVER_URL = 'http://localhost:3000'
 export class ChatComponent implements OnInit {
   constructor(private socketService: SocketService){}
 
-  message: string = '';
-  messages: string[] = [];
+  message= signal("");
+  messages = signal<Message[]>([]);
 
+  private initialiseConnection(){
+    this.socketService.initSocket();
+    this.socketService.getMessage().subscribe ((messages: any) => {
+      this.messages.set(messages)
+    })
+  }
 
   ngOnInit(){
-    this.socketService.initSocket();
-    this.socketService.getMessage((message: string)=>{this.messages.push(message)})
+    this.initialiseConnection()
   }
 
   sendMessage(){
-    this.socketService.sendMessage(this.message)
+    if( this.message() ) {
+      this.socketService.sendMessage(this.message())
+      this.message.set("");
+    }else{
+      console.log('No message')
+    }
+    
   }
 }
